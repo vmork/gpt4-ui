@@ -10,6 +10,8 @@
 	}
 	$: console.log(promptParams);
 
+	console.log("DEV")
+
 	let promptTextarea;
 	let prompt = "";
 	let systemPrompt = ""
