@@ -10173,7 +10173,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (67:4) {#each ['gpt-3.5-turbo', 'gpt-4'] as model}
+    // (68:4) {#each ['gpt-3.5-turbo', 'gpt-4'] as model}
     function create_each_block_1(ctx) {
     	let option;
     	let t;
@@ -10184,7 +10184,7 @@ var app = (function () {
     			t = text(/*model*/ ctx[17]);
     			option.__value = /*model*/ ctx[17];
     			option.value = option.__value;
-    			add_location(option, file, 67, 5, 2101);
+    			add_location(option, file, 68, 5, 2121);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, option, anchor);
@@ -10200,14 +10200,14 @@ var app = (function () {
     		block,
     		id: create_each_block_1.name,
     		type: "each",
-    		source: "(67:4) {#each ['gpt-3.5-turbo', 'gpt-4'] as model}",
+    		source: "(68:4) {#each ['gpt-3.5-turbo', 'gpt-4'] as model}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (84:3) {#if msg.role !== 'system'}
+    // (85:3) {#if msg.role !== 'system'}
     function create_if_block(ctx) {
     	let div1;
     	let div0;
@@ -10219,10 +10219,10 @@ var app = (function () {
     			div1 = element("div");
     			div0 = element("div");
     			attr_dev(div0, "class", div0_class_value = "" + (null_to_empty(/*msg*/ ctx[14].role + '-msg') + " svelte-1jpce10"));
-    			add_location(div0, file, 85, 4, 2619);
+    			add_location(div0, file, 86, 4, 2639);
     			attr_dev(div1, "id", "msg-container");
     			attr_dev(div1, "class", "svelte-1jpce10");
-    			add_location(div1, file, 84, 3, 2589);
+    			add_location(div1, file, 85, 3, 2609);
     		},
     		m: function mount(target, anchor) {
     			insert_dev(target, div1, anchor);
@@ -10244,14 +10244,14 @@ var app = (function () {
     		block,
     		id: create_if_block.name,
     		type: "if",
-    		source: "(84:3) {#if msg.role !== 'system'}",
+    		source: "(85:3) {#if msg.role !== 'system'}",
     		ctx
     	});
 
     	return block;
     }
 
-    // (83:2) {#each messages as msg}
+    // (84:2) {#each messages as msg}
     function create_each_block(ctx) {
     	let if_block_anchor;
     	let if_block = /*msg*/ ctx[14].role !== 'system' && create_if_block(ctx);
@@ -10289,7 +10289,7 @@ var app = (function () {
     		block,
     		id: create_each_block.name,
     		type: "each",
-    		source: "(83:2) {#each messages as msg}",
+    		source: "(84:2) {#each messages as msg}",
     		ctx
     	});
 
@@ -10369,36 +10369,36 @@ var app = (function () {
     			textarea1 = element("textarea");
     			attr_dev(textarea0, "id", "system-prompt-input");
     			attr_dev(textarea0, "class", "svelte-1jpce10");
-    			add_location(textarea0, file, 60, 2, 1869);
+    			add_location(textarea0, file, 61, 2, 1889);
     			if (/*promptParams*/ ctx[0].model === void 0) add_render_callback(() => /*select_change_handler*/ ctx[8].call(select));
     			set_style(select, "display", `inline-block`);
-    			add_location(select, file, 65, 3, 1976);
-    			add_location(div0, file, 63, 2, 1955);
+    			add_location(select, file, 66, 3, 1996);
+    			add_location(div0, file, 64, 2, 1975);
     			attr_dev(input0, "type", "number");
     			attr_dev(input0, "step", "0.1");
     			attr_dev(input0, "min", "0");
     			attr_dev(input0, "max", "1");
     			set_style(input0, "display", `inline-block`);
-    			add_location(input0, file, 73, 3, 2207);
-    			add_location(div1, file, 71, 2, 2180);
+    			add_location(input0, file, 74, 3, 2227);
+    			add_location(div1, file, 72, 2, 2200);
     			attr_dev(input1, "type", "number");
     			attr_dev(input1, "step", "1");
     			attr_dev(input1, "min", "1");
     			attr_dev(input1, "max", "1000");
     			set_style(input1, "display", `inline-block`);
-    			add_location(input1, file, 77, 3, 2364);
-    			add_location(div2, file, 75, 2, 2338);
+    			add_location(input1, file, 78, 3, 2384);
+    			add_location(div2, file, 76, 2, 2358);
     			attr_dev(div3, "id", "sidebar-div");
     			attr_dev(div3, "class", "svelte-1jpce10");
-    			add_location(div3, file, 58, 1, 1825);
+    			add_location(div3, file, 59, 1, 1845);
     			attr_dev(textarea1, "id", "prompt-input");
     			attr_dev(textarea1, "class", "svelte-1jpce10");
-    			add_location(textarea1, file, 92, 2, 2829);
+    			add_location(textarea1, file, 93, 2, 2849);
     			attr_dev(div4, "id", "chat-div");
     			attr_dev(div4, "class", "svelte-1jpce10");
-    			add_location(div4, file, 81, 1, 2506);
+    			add_location(div4, file, 82, 1, 2526);
     			attr_dev(main, "class", "svelte-1jpce10");
-    			add_location(main, file, 57, 0, 1816);
+    			add_location(main, file, 58, 0, 1836);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -10534,6 +10534,7 @@ var app = (function () {
     		'stream': false
     	};
 
+    	console.log("DEV");
     	let promptTextarea;
     	let prompt = "";
     	let systemPrompt = "";
