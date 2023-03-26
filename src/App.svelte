@@ -1,26 +1,65 @@
+<svelte:head>	
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css" integrity="sha384-vKruj+a13U8yHIkAyGgK1J3ArTLzrFGBbBc0tDp4ad/EyewESeXE/Iv67Aj8gKZ0" crossorigin="anonymous">
+	<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js" integrity="sha384-PwRUT/YqbnEjkZO0zZxNqcxACrXe+j766U2amXcgMg5457rve2Y7I6ZJSm2A0mS4" crossorigin="anonymous"
+		on:load={() => katexLoaded = true}></script>
+
+</svelte:head>
+
 <script lang="ts">
 	import sanitizeHtml from 'sanitize-html';
-	import { onMount } from 'svelte';
+	import hljs from 'highlight.js';
+	import { onMount, beforeUpdate, afterUpdate } from 'svelte';
+
+	import { parseMessage } from './parser'
 
 	const promptParams = {
 		'model': 'gpt-3.5-turbo',
-		'max_tokens': 200,
+		'max_tokens': 1,
 		'temperature': 1,
 		'stream': false,
 	}
 	$: console.log(promptParams);
-
-	console.log("DEV")
-
+	
+	let katexLoaded = false;
 	let promptTextarea;
 	let prompt = "";
 	let systemPrompt = ""
-	let messages = [];
+	let messages = [{'role': 'assistant', 'content': "Hello! $x + 1 = 234$, code: ```python\n def f(x): \n    return True loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong \n```"}];
+	// let messages = [{'role': 'assistant', 'content': "<hello> 'i am well'"}];
+	// let messages = []
+	
 	
 	onMount(() => {
 		promptTextarea.style.height = 'auto';
 		promptTextarea.focus();
-	});
+	});	
+
+	// autoscrolling
+	let chatDiv: HTMLDivElement;
+	let autoscroll;
+	beforeUpdate(() => {
+		autoscroll = chatDiv && (chatDiv.offsetHeight + chatDiv.scrollTop) > (chatDiv.scrollHeight - 20);
+	})
+	afterUpdate(() => {
+		if (autoscroll) chatDiv.scrollTo(0, chatDiv.scrollHeight);
+	})
+
+	function parseRawMessage(msg: string) {
+		if (!katexLoaded) console.log("katex not loaded yet");
+
+		// msg = sanitizeHtml(msg, { allowedTags: [] })
+		msg = msg.replace(/&/g, "&amp;")
+				 .replace(/</g, "&lt;")
+				 .replace(/>/g, "&gt;")
+				 .replace(/"/g, "&quot;")
+				 .replace(/'/g, "&#039;");
+
+		let output = parseMessage(msg);
+
+		return output;
+	}
 
 	function addMessage(role: string, content: string) {
 		const newMessage = { role: role, content: content };
@@ -35,6 +74,9 @@
 	
 	async function sendPrompt(e: KeyboardEvent) {
 		if (!(e.ctrlKey && e.key === 'Enter')) { return; }
+
+		let code = document.querySelector("pre")
+		console.log("code-elem", code)
 
 		if ( systemPrompt ) {
 			messages[0] = { role: 'system', content: systemPrompt };
@@ -60,8 +102,9 @@
 			return;
 		}
 		const json = await res.json();
-		console.log(json);
+		console.log("json response:", json);
 		const content = json.choices[0].message.content.trim();
+		console.log("received:", content)
 		addMessage('assistant', content);
 	}
 </script>
@@ -90,17 +133,19 @@
 		</div>
 	</div>
 	
-	<div id="chat-div">
+	<div id="chat-div" bind:this={chatDiv}>
+		{#if katexLoaded}
 		{#each messages as msg}
 			{#if msg.role !== 'system'}
 			<div id="msg-container">
 				<div class={msg.role + '-msg'}> 
-					<!-- Add line breaks to output -->
-					{@html sanitizeHtml(msg.content.replace(/\n/g, '<br>'), { allowedTags: ['br'] })} 
+					{@html parseRawMessage(msg.content)} 
 				</div>
 			</div>
 			{/if}
 		{/each}
+		{/if}
+		
 		<textarea 
 			id="prompt-input" 
 			bind:this={promptTextarea} 
@@ -118,6 +163,14 @@
 		height: 100%;
 		display: flex;
 	}
+	main :global(pre) {
+		border: 1px solid rgb(53, 51, 51);
+		border-radius: 3px;
+		margin: 10px 0px;
+		padding: 5px;
+		background-color: rgb(255, 255, 255);
+		white-space: pre-wrap;
+	}
 	#sidebar-div {
 		padding: 5px;
 		margin: 0;
@@ -131,20 +184,28 @@
 	#chat-div {
 		background-color: $white;
 		color: $dark;
+		padding-bottom: 100px;
+		padding-bottom: 100px;
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		// justify-content: center;
 		align-items: center;
+		overflow-y: scroll;
+		position: relative
+	}
+	#chat-div::-webkit-scrollbar {
+    	display: none;
 	}
 	#prompt-input {
 		font-size: 16px;
 		font-family: 'Open Sans', sans-serif;
 		margin: 10px;
-		width: 80%;
+		width: 50%;
 		height: 20%;
 		margin-top: auto;
 		resize: none;
+		position: fixed;
+		bottom: 0;
 	}
 	#system-prompt-input {
 		font-size: 16px;
@@ -155,23 +216,30 @@
 		resize: none;
 	}
 	#msg-container {
-		width: 90%;
+		width: 80%;
 		margin: 0;
 		padding: 0;	
 	}
 	.user-msg, .assistant-msg, .error-msg {
+		width: 85%;
 		margin: 5px;
 		padding: 10px;
-		border-radius: 10px;
 		overflow-wrap: break-word;
+		white-space: pre-line;
+		line-height: 150%;
 	}
 	.user-msg {
+		margin-right: auto;
 		background-color: rgb(255, 255, 255);
+		border-radius: 15px 15px 15px 0;
 	}
 	.assistant-msg {
+		margin-left: auto;
 		background-color: rgb(204, 214, 214);
+		border-radius: 15px 15px 0 15px;
 	}
 	.error-msg {
 		background-color: rgb(185, 106, 106);
 	}
+
 </style>
