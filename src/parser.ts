@@ -1,7 +1,8 @@
 import katex from "katex"
 import hljs, { HighlightResult } from "highlight.js"
+import sanitizeHtml from 'sanitize-html';
 
-enum TT {
+enum TT { // Tokentype
     Text = "Text",
     LatexDelim = "LatexDelim",
     CodeDelim = "CodeDelim",
@@ -30,7 +31,20 @@ function getClosingDelimiter(delim: string) {
     }[delim]
 }
 
-const codeDelim = "```"
+function escapeHtml(html) {
+    return html.replace(/&/g, "&amp;")
+               .replace(/</g, "&lt;")
+               .replace(/>/g, "&gt;")
+               .replace(/"/g, "&quot;")
+               .replace(/'/g, "&#039;");
+}
+function unescapeHtml(html) {
+    return html.replace(/&amp;/g, "&")
+               .replace(/&lt;/g, "<")
+               .replace(/&gt;/g, ">")
+               .replace(/&quot;/g, '"')
+               .replace(/&#039;/g, "'");
+}
 
 class Scanner {
     input: string 
@@ -118,7 +132,6 @@ class Parser {
         this.tokens = tokens
         this.output = []
         this.current = 0
-        console.log("tokens: ", tokens)
     }
 
     isAtEnd() {
@@ -136,14 +149,21 @@ class Parser {
         this.output.push(text)
     }
     addKatex(delim: string, math: string) {
-        console.log(delim, math)
-        const displayMode = delim === '$$' || delim === '\\['
-        const html = katex.renderToString(math, { displayMode });
+        math = unescapeHtml(math);
+        const displayMode = delim === '$$' || delim === '\\[';
+        const html = katex.renderToString(math, { displayMode, throwOnError: false });
         this.output.push(html)
     }
     addCode(code: string, language: string) {
         let highlighted: HighlightResult
-        if (language) { highlighted = hljs.highlight(code.trim(), { language }) }
+        code = unescapeHtml(code.trim())
+        if (language) { 
+            try {
+                highlighted = hljs.highlight(code, { language }) 
+            } catch {
+                highlighted = hljs.highlightAuto(code)
+            }
+        }
         else { highlighted = hljs.highlightAuto(code) }
         const html = '<pre><code">' + highlighted.value + '</code></pre>'
         this.output.push(html)
@@ -166,13 +186,18 @@ class Parser {
                 this.advance() // consume closing delimiter
             }
             else if (token.type === TT.CodeDelim) {
+                if (this.isAtEnd()) { break }
                 let text = this.advance().data
                 let [language, code] = this.getCodeLanguage(text)
                 while (!this.isAtEnd() && this.peek().type !== TT.CodeDelim) {
                     code += this.advance().data
                 }
-                this.advance()
-                console.log("code:", code)
+                if (!this.isAtEnd()) {
+                    this.advance() // consume closing delimiter
+                    if (this.peek() && this.peek().type === TT.Text) { // remove newline after end of code block
+                        this.peek().data = this.peek().data.trimStart()
+                    }
+                }
                 this.addCode(code, language)
             }
             else {
@@ -181,14 +206,23 @@ class Parser {
         }
         return this.output.join("")
     }
-
 }
 
 function parseMessage(input: string) {
+    const start = performance.now()
+
+    input = input.trim()		
+    input = escapeHtml(input)
+    input = sanitizeHtml(input, { allowedTags: [] })
+    input = input.replace(/\n```/g, "```")
     const scanner = new Scanner(input)
     const tokens = scanner.scan()
     const parser = new Parser(tokens)
-    return parser.parse()
+    const output = parser.parse()
+
+    const end = performance.now()
+    // console.log(`parsed ${tokens.length} tokens in ${(end - start).toFixed(2) + "ms"}`, tokens)
+    return output
 }
 
 export { parseMessage }

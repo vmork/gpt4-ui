@@ -28,6 +28,8 @@
     "typescript": "^4.6.3"
   },
   "dependencies": {
+    "@microsoft/fetch-event-source": "^2.0.1",
+    "eventsource-parser": "^1.0.0",
     "highlight.js": "^11.7.0",
     "katex": "^0.16.4",
     "sanitize-html": "^2.10.0",
